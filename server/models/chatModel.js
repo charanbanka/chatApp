@@ -9,4 +9,4 @@ const schema = mongoose.Schema(
   }
 );
 
-module.exports = mongoose.model("chatModel", schema);
+module.exports = mongoose.model("chats", schema);
