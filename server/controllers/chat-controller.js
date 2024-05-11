@@ -3,7 +3,7 @@ const ChatModel = require("../models/chatModel"); // Assuming ChatModel represen
 
 const createChat = async (req, res) => {
   try {
-    const userIds = req.body.userIds;
+    const userIds = req.body.members;
 
     // Check if all user IDs exist in the database
     const users = await UserModel.find({ _id: { $in: userIds } });
@@ -30,6 +30,22 @@ const createChat = async (req, res) => {
   }
 };
 
+const getAllChats = async (req, res) => {
+  try {
+    // Check if all user IDs exist in the database
+    const chats = await ChatModel.find();
+
+    // Return success response
+    res.json({ status: "success", data: chats });
+  } catch (error) {
+    console.error("getAllChats error:", error);
+    res.status(500).json({
+      status: "failed",
+      message: "An error occurred while creating the chat",
+    });
+  }
+};
+
 const findAllChatsByMember = async (req, res) => {
   try {
     const member = req.params.member;
@@ -48,4 +64,4 @@ const findAllChatsByMember = async (req, res) => {
   }
 };
 
-module.exports = { createChat, findAllChatsByMember };
+module.exports = { createChat, findAllChatsByMember, getAllChats };

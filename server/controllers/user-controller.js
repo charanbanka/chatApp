@@ -16,7 +16,8 @@ const createUser = async (req, res) => {
 
 const getUsers = async (req, res) => {
   try {
-    const users = await UserModel.find();
+    let users = await UserModel.find().select("-password");
+
     res.json({ status: "success", data: users });
   } catch (error) {
     console.error("getUsers error:", error);

@@ -107,7 +107,7 @@ const getUserInfo = async (req, res) => {
 
     return res.json({
       status: SERVICE_SUCCESS,
-      data: { name: user.name, email: user.email },
+      data: {_id, name: user.name, email: user.email },
     });
   } catch (error) {
     console.error("getUserInfo error: ", error);
