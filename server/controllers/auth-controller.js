@@ -97,17 +97,11 @@ const signUp = async (req, res) => {
 
 const getUserInfo = async (req, res) => {
   try {
-    let { token } = req.headers;
-
-    let decode = await jwt.verify(token, process.env.JWT_SECRET);
-
-    console.log("decode", decode);
-    const _id = decode._id;
-    const user = await UserModel.findOne({ _id });
+    let userInfo = req.userInfo;
 
     return res.json({
       status: SERVICE_SUCCESS,
-      data: {_id, name: user.name, email: user.email },
+      data: userInfo,
     });
   } catch (error) {
     console.error("getUserInfo error: ", error);
@@ -117,4 +111,38 @@ const getUserInfo = async (req, res) => {
   }
 };
 
-module.exports = { signIn, signUp, getUserInfo };
+const isAuthenticated = async (req, res, next) => {
+  try {
+    let { token } = req.headers;
+    if (!token)
+      return res.status(500).json({
+        status: SERVICE_SUCCESS,
+        message: "Please provide Token",
+      });
+    let decode = await jwt.verify(token, process.env.JWT_SECRET);
+
+    const _id = decode._id;
+    if (!_id)
+      return res.status(500).json({
+        status: SERVICE_SUCCESS,
+        message: "Please provide valid Token",
+      });
+    const user = await UserModel.findOne({ _id });
+    if (!user)
+      return res.status(500).json({
+        status: SERVICE_SUCCESS,
+        message: "Please provide valid Token",
+      });
+
+    req.userInfo = { _id, name: user.name, email: user.email };
+
+    next();
+  } catch (error) {
+    console.error("isAuthenticated error: ", error);
+    return res
+      .status(500)
+      .json({ status: SERVICE_SUCCESS, message: error.message });
+  }
+};
+
+module.exports = { signIn, signUp, getUserInfo, isAuthenticated };

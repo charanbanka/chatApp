@@ -1,3 +1,6 @@
+import moment from "moment";
+import "moment/locale/en-au"; // Import locale if needed
+
 export const getRandomColor = () => {
   const colors = [
     "#ff5722",
@@ -57,4 +60,38 @@ export const getUserById = (_id, data) => {
   return data?.find((item) => {
     return item._id == _id;
   });
+};
+
+export const getUserIdFromMembers = (user_id, members) => {
+  if (members[0] == user_id) {
+    return members[1];
+  }
+  return members[0];
+};
+
+export const getUserFromChat = (user_id, members, users) => {
+  return getUserById(getUserIdFromMembers(user_id, members), users);
+};
+
+export const getFormattedTime = (date) => {
+  const createdAt = moment(date);
+  let formattedTime = createdAt.format("h:mm A");
+
+  // Check if created today
+  if (moment().isSame(createdAt, "day")) {
+    formattedTime = "Today, " + formattedTime;
+  } else if (moment().subtract(1, "day").isSame(createdAt, "day")) {
+    // Check if created yesterday
+    formattedTime = "Yesterday, " + formattedTime.toLowerCase();
+  } else if (moment().subtract(7, "days").isBefore(createdAt)) {
+    // Check if created within the last week
+    formattedTime = createdAt.format("dddd, ") + formattedTime;
+  } else if (moment().subtract(1, "month").isBefore(createdAt)) {
+    // Check if created within the last month
+    formattedTime = createdAt.format("MMM D, ") + formattedTime;
+  } else {
+    // For older messages, display date
+    formattedTime = createdAt.format("MMM D, YYYY") + ", " + formattedTime;
+  }
+  return formattedTime.toLowerCase()
 };

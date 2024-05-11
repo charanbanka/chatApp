@@ -1,24 +1,19 @@
 import React, { useContext, useEffect, useState } from "react";
-import Box from "@mui/material/Box";
-import Stack from "@mui/material/Stack";
-import Button from "@mui/material/Button";
-import TextField from "@mui/material/TextField";
-import { styled } from "@mui/material/styles";
-import { Container, Typography, capitalize } from "@mui/material";
-
 import { useNavigate } from "react-router-dom";
 import { UserContext } from "../context/user-context";
 import _const from "../../common/const";
 import config from "../../common/config";
 import ServiceRequest from "../../utils/service-request";
+import {
+  Button,
+  CircularProgress,
+  Container,
+  Snackbar,
+  Stack,
+  TextField,
+  Typography,
+} from "@mui/material";
 
-const AbsoluteContainer = styled("div")({
-  position: "absolute",
-  top: "50%",
-  left: 0,
-  width: "100%",
-  transform: "translateY(-50%)",
-});
 const initial_form_values = {
   name: "",
   email: "",
@@ -28,14 +23,23 @@ const initial_form_values = {
 export default function Auth({ setState, signIn, redirectUrl }) {
   const [formData, setFormData] = useState(initial_form_values);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [notification, setNotification] = useState({
+    open: false,
+    message: "",
+    vertical: "top",
+    horizontal: "center",
+  });
   const { user, updateUserDetails } = useContext(UserContext);
   const navigate = useNavigate();
 
-  // useEffect(() => {
-  //   if (user.name) {
-  //     navigate("/");
-  //   }
-  // }, [user]);
+  const { open, message, vertical, horizontal } = notification || {};
+
+  useEffect(() => {
+    if (user.name) {
+      navigate("/");
+    }
+  }, [user, navigate]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -46,14 +50,20 @@ export default function Auth({ setState, signIn, redirectUrl }) {
   };
 
   const loginUser = async (data) => {
+    setLoading(true);
     let url = `${config.baseurl}/login`;
     let resp = await ServiceRequest({ url, method: "POST", data });
-    console.log("resp=>", resp);
+
     let respData = resp?.data;
+    setLoading(false);
+
     if (respData.status == _const.SERVICE_FAILURE) {
       setError(respData.message);
       return;
     }
+    setNotification((prev) => {
+      return { ...prev, open: true, message: "Login Success!" };
+    });
     setError("");
     localStorage.setItem("token", respData.data.token);
     updateUserDetails(respData.data);
@@ -61,14 +71,20 @@ export default function Auth({ setState, signIn, redirectUrl }) {
   };
 
   const signUp = async (data) => {
+    setLoading(true);
     let url = `${config.baseurl}/signup`;
     let resp = await ServiceRequest({ url, method: "POST", data });
-    console.log("resp=>", resp);
+
     let respData = resp?.data;
+    setLoading(false);
+
     if (respData.status == _const.SERVICE_FAILURE) {
       setError(respData.message);
       return;
     }
+    setNotification((prev) => {
+      return { ...prev, open: true, message: "Successfully Registered!" };
+    });
     setError("");
     setFormData({});
     navigate("/login");
@@ -76,21 +92,33 @@ export default function Auth({ setState, signIn, redirectUrl }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
     if (signIn) {
       // Perform login action
       loginUser(formData);
-      console.log("Login data:", formData);
     } else {
       // Perform signup action
       signUp(formData);
-      console.log("Signup data:", formData);
     }
+  };
+  const handleClose = () => {
+    setNotification((prev) => {
+      return { ...prev, open: false, message: "" };
+    });
   };
 
   return (
-    <AbsoluteContainer xs={{ m: 2 }}>
+    <div
+      style={{
+        position: "absolute",
+        top: "50%",
+        left: 0,
+        width: "100%",
+        transform: "translateY(-50%)",
+      }}
+    >
       <Container maxWidth="xs">
-        <Box sx={{ width: "100%" }}>
+        <div style={{ width: "100%" }}>
           <Stack spacing={2}>
             {/* <Item color="red">{signIn ? "Sign In" : "Sign Up"}</Item> */}
             <Typography
@@ -161,7 +189,13 @@ export default function Auth({ setState, signIn, redirectUrl }) {
                 color="primary"
                 fullWidth
               >
-                {signIn ? "Sign In" : "Sign Up"}
+                {loading ? (
+                  <CircularProgress />
+                ) : signIn ? (
+                  "Sign In"
+                ) : (
+                  "Sign Up"
+                )}
               </Button>
             </form>
             <Button
@@ -172,8 +206,15 @@ export default function Auth({ setState, signIn, redirectUrl }) {
               {signIn ? "Create an account" : "Already have an account?"}
             </Button>
           </Stack>
-        </Box>
+        </div>
+        <Snackbar
+          anchorOrigin={{ vertical, horizontal }}
+          open={open}
+          onClose={handleClose}
+          message={message}
+          key={vertical + horizontal}
+        />
       </Container>
-    </AbsoluteContainer>
+    </div>
   );
 }

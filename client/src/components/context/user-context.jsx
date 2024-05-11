@@ -10,7 +10,6 @@ export const UserContextComponent = ({ children }) => {
   const [allUsers, setAllUsers] = useState([]);
 
   function updateUserDetails(data) {
-    console.log("updateUserDetails", data);
     setUser(data);
   }
   const token = localStorage.getItem("token");
@@ -19,7 +18,7 @@ export const UserContextComponent = ({ children }) => {
     let url = `${config.baseurl}/getuserbytoken`;
 
     let resp = await ServiceRequest({ url, method: "GET" });
-    console.log("getUserDetails=>", resp.data);
+
     setUser(resp.data.data);
   };
 
@@ -33,7 +32,6 @@ export const UserContextComponent = ({ children }) => {
       let data = resp.data.data;
 
       setAllUsers(data);
-      console.log("allusers", data);
     } catch (error) {
       console.log("fetchAllChats=>", error);
     }
@@ -46,6 +44,8 @@ export const UserContextComponent = ({ children }) => {
     if (user.name) {
       fetchAllUsers();
     }
+
+   
   }, [user, token]);
 
   return (

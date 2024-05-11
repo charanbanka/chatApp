@@ -1,5 +1,4 @@
 import { Avatar, Stack, Typography } from "@mui/material";
-import { deepOrange } from "@mui/material/colors";
 import React, { useContext, useState } from "react";
 import { UserContext } from "../context/user-context";
 import { Dropdown, MenuButton, Menu, MenuItem } from "@mui/joy";
@@ -7,12 +6,13 @@ import { useNavigate } from "react-router-dom";
 import { getRandomColor } from "../../utils";
 
 const UserBar = () => {
-  const { user } = useContext(UserContext);
   const [isShow, setIsShow] = useState(false);
+  const { user, updateUserDetails } = useContext(UserContext);
   const navigate = useNavigate();
 
   const handleLogout = () => {
     localStorage.clear();
+    updateUserDetails({});
     navigate("/login");
   };
 

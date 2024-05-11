@@ -1,6 +1,6 @@
 import React, { useContext, useState } from "react";
 import UserBar from "./UserBar";
-import { Grid, Stack, TextField } from "@mui/material";
+import { Grid, Stack } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import UserChats from "./UserChats";
 import { Dropdown, Menu, MenuButton, MenuItem } from "@mui/joy";
@@ -13,23 +13,21 @@ import _const from "../../common/const";
 const LeftBar = () => {
   const [isNewChat, setIsNewChat] = useState(false);
   const { user, allUsers } = useContext(UserContext);
-  const { allChats, chatsByUser, chatBox, fetchAllChats, updateChatBox } =
+  const { userChats, fetchAllChatsByUser, currentChat, setCurrentChat } =
     useContext(ChatContext);
 
-  const handleCreateChat = async (item) => {
-    const members = [user._id, item._id].sort((a, b) => a - b);
-    let oldChat = allChats.find((chat) => {
-      const sortedMembers = chat.members.slice().sort((a, b) => a - b); // Sort the members array
-      return JSON.stringify(sortedMembers) === JSON.stringify(members); // Compare sorted arrays as strings
+  const handleCreateChat = async (newUser) => {
+    const members = [user._id, newUser._id].sort((a, b) => a - b);
+    let oldChat = userChats.find((chat) => {
+      if (chat.members.some((_id) => newUser._id == _id)) return chat;
+      // const sortedMembers = chat.members.slice().sort((a, b) => a - b); // Sort the members array
+      // return JSON.stringify(sortedMembers) === JSON.stringify(members); // Compare sorted arrays as strings
     });
 
-    console.log("oldChat", oldChat);
     if (oldChat) {
-      updateChatBox(oldChat);
+      setCurrentChat(oldChat);
       return;
     }
-
-    console.log("oldChat after", oldChat);
 
     let obj = {
       url: `${config.baseurl}/chats`,
@@ -43,13 +41,17 @@ const LeftBar = () => {
       return;
     }
 
-    fetchAllChats();
-
-    console.log("handleCreateChat=>", resp.data);
+    fetchAllChatsByUser(user?._id);
   };
+
   return (
     <Stack
-      sx={{ background: "#1d4a65;", color: "white", height: "100%" }}
+      sx={{
+        background: "#1d4a65;",
+        color: "white",
+        height: "100%",
+        borderRight: "1px solid grey",
+      }}
       spacing={1}
     >
       <UserBar />
@@ -77,6 +79,7 @@ const LeftBar = () => {
             <Menu size="sm">
               {allUsers.length > 0 &&
                 allUsers.map((item) => {
+                  if (item._id == user._id) return;
                   return (
                     <MenuItem
                       sx={{ textTransform: "capitalize" }}

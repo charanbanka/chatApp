@@ -1,29 +1,32 @@
-import React from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import CssBaseline from "@mui/material/CssBaseline";
-import Chat from "./pages/Chat";
+import React, { useContext } from "react";
+import { Routes, Route, Navigate } from "react-router-dom";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
-import { UserContextComponent } from "./components/context/user-context";
-import PrivateRoute from "./components/private-route";
+import { UserContext } from "./components/context/user-context";
 import { ChatContextComponent } from "./components/context/chat-context";
+import Chat from "./pages/Chat";
 
 const App = () => {
-  return (
-    <BrowserRouter>
-      <CssBaseline />
-      <UserContextComponent>
-        <ChatContextComponent>
-          <Routes>
-            <Route path="/" element={<Chat />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
+  const { user } = useContext(UserContext);
 
-            <Route path="*" element={<Navigate to="/" />} />
-          </Routes>
-        </ChatContextComponent>
-      </UserContextComponent>
-    </BrowserRouter>
+  return (
+    <ChatContextComponent user={user}>
+      <Routes>
+        <Route
+          path="/"
+          element={user?._id ? <Chat /> : <Navigate to="/login" />}
+        />
+        <Route
+          path="/login"
+          element={user?._id ? <Navigate to="/" /> : <Login />}
+        />
+        <Route
+          path="/register"
+          element={user?._id ? <Navigate to="/" /> : <Register />}
+        />
+        <Route path="*" element={<Navigate to="/" />} />
+      </Routes>
+    </ChatContextComponent>
   );
 };
 

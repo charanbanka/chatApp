@@ -2,16 +2,12 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import config from "../../common/config";
 import _const from "../../common/const";
 import ServiceRequest from "../../utils/service-request";
-import { UserContext } from "./user-context";
 
 export const ChatContext = createContext();
 
-export const ChatContextComponent = ({ children }) => {
-  const [allChats, setAllChats] = useState([]);
-  const [chatsByUser, setChatsByUser] = useState([]);
-  const [chatBox, setChatBox] = useState({});
-
-  const { user } = useContext(UserContext);
+export const ChatContextComponent = ({ children, user }) => {
+  const [userChats, setUserChats] = useState([]);
+  const [currentChat, setCurrentChat] = useState({});
 
   const fetchAllChats = async () => {
     try {
@@ -22,30 +18,46 @@ export const ChatContextComponent = ({ children }) => {
       }
       let data = resp.data.data;
       setAllChats(data);
-      console.log("fetchAllChats allchats", data);
+
       let allChatsByUser = data.filter((item) =>
         item.members.includes(user._id)
       );
-      console.log("allChatsByUser", allChatsByUser);
       setChatsByUser(allChatsByUser);
     } catch (error) {
       console.log("fetchAllChats=>", error);
     }
   };
 
-  const updateChatBox = (data) => {
-    setChatBox(data);
+  const fetchAllChatsByUser = async (user_id) => {
+    try {
+      let url = `${config.baseurl}/chats/${user_id}`;
+      let resp = await ServiceRequest({ url });
+      if (resp.data.status === _const.SERVICE_FAILURE) {
+        return;
+      }
+      let data = resp.data.data;
+      setUserChats(data);
+    } catch (error) {
+      console.log("fetchAllChats=>", error);
+    }
   };
 
   useEffect(() => {
-    if (user.name) {
-      fetchAllChats();
+    console.log("user", user);
+    if (user?._id) {
+      fetchAllChatsByUser(user._id);
     }
   }, [user]);
 
   return (
     <ChatContext.Provider
-      value={{ allChats, chatsByUser, chatBox, fetchAllChats, updateChatBox }}
+      value={{
+        userChats,
+        setUserChats,
+        fetchAllChatsByUser,
+        currentChat,
+        setCurrentChat,
+      }}
     >
       {children}
     </ChatContext.Provider>
