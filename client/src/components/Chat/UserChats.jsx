@@ -1,6 +1,7 @@
 import React, { useContext } from "react";
 import { ListItemContent, ListItemDecorator } from "@mui/joy";
 import {
+  checkIsUserOnline,
   getFormattedTime,
   getRandomColor,
   getUserById,
@@ -14,8 +15,14 @@ import { MessageContext } from "../context/message-context";
 
 const UserChats = () => {
   const { user, allUsers } = useContext(UserContext);
-  const { userChats, currentChat, updateCurrentChatAndUser, messages } =
-    useContext(ChatContext);
+  const {
+    userChats,
+    currentChat,
+    currentChatUser,
+    updateCurrentChatAndUser,
+    messages,
+    onlineUsers,
+  } = useContext(ChatContext);
 
   return (
     <div
@@ -82,12 +89,16 @@ const UserChats = () => {
                       >
                         {_user?.name}
                       </Typography>
-                      {messages?.[messages.length - 1]?.createdAt && (
-                        <Typography variant="caption">
-                          {getFormattedTime(
-                            messages?.[messages.length - 1]?.createdAt
-                          )}
-                        </Typography>
+                      {checkIsUserOnline(_user?._id, onlineUsers) ? (
+                        <Typography color="green">online</Typography>
+                      ) : (
+                        messages?.[messages.length - 1]?.createdAt && (
+                          <Typography variant="caption">
+                            {getFormattedTime(
+                              messages?.[messages.length - 1]?.createdAt
+                            )}
+                          </Typography>
+                        )
                       )}
                     </Stack>
 

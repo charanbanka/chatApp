@@ -35,6 +35,13 @@ const ChatMessages = () => {
   } = useContext(ChatContext);
 
   const textRef = useRef();
+  const latestMessageRef = useRef(null);
+  // Scroll to the latest message when messages change
+  useEffect(() => {
+    if (latestMessageRef.current) {
+      latestMessageRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages]);
   if (!currentChat?._id)
     return (
       <Stack
@@ -57,7 +64,6 @@ const ChatMessages = () => {
       </Stack>
     );
 
-  console.log("isCurrentChatOnline in chat", isCurrentChatOnline);
   const handleSubmit = () => {
     const text = textRef.current.value;
     const senderId = user?._id;
@@ -109,7 +115,7 @@ const ChatMessages = () => {
       </Stack>
     );
   };
-console.log("messages",messages,newMessage)
+ 
   const ShowMessages = () => {
     return (
       <Stack sx={{ p: 1, color: "white", overflowY: "auto", height: "82%" }}>
@@ -122,7 +128,7 @@ console.log("messages",messages,newMessage)
 
         <List sx={{ p: 2 }}>
           {messages?.length > 0 &&
-            messages.map((msg) => {
+            messages.map((msg, idx) => {
               return (
                 <ListItem
                   key={msg._id}
@@ -133,6 +139,7 @@ console.log("messages",messages,newMessage)
                     p: 0,
                     mb: 0.7,
                   }}
+                  ref={idx === messages.length - 1 ? latestMessageRef : null}
                 >
                   <Paper
                     sx={{

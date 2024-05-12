@@ -4,6 +4,7 @@ import { UserContext } from "../context/user-context";
 import { Dropdown, MenuButton, Menu, MenuItem } from "@mui/joy";
 import { useNavigate } from "react-router-dom";
 import { getRandomColor } from "../../utils";
+import Notification from "./Notification";
 
 const UserBar = () => {
   const [isShow, setIsShow] = useState(false);
@@ -30,6 +31,7 @@ const UserBar = () => {
     >
       <Typography>Chats</Typography>
 
+      <Notification/>
       <Dropdown>
         <MenuButton>
           <Avatar

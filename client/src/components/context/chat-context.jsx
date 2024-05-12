@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import config from "../../common/config";
 import _const from "../../common/const";
 import ServiceRequest from "../../utils/service-request";
@@ -17,6 +23,7 @@ export const ChatContextComponent = ({ children, user, allUsers }) => {
   const [isCurrentChatOnline, setIsCurrentChatOnline] = useState(false);
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState({});
+  const [notifications, setNotifications] = useState([]);
 
   useEffect(() => {
     let newSocket = io("http://localhost:5000/");
@@ -52,7 +59,7 @@ export const ChatContextComponent = ({ children, user, allUsers }) => {
     });
   }, [newMessage]);
 
-  //receive message
+  //receive message and notification
   useEffect(() => {
     if (socket == null) return;
 
@@ -64,7 +71,22 @@ export const ChatContextComponent = ({ children, user, allUsers }) => {
       });
     });
 
-    return () => socket.off("getMessages");
+    socket.on("getNotification", (res) => {
+      console.log("getNotification=>", res);
+      const isChatOpen = currentChat?.members?.some(
+        (mem) => mem == res.senderId
+      );
+      if (isChatOpen) {
+        setNotifications((prev) => [{ ...res, isRead: true }, ...prev]);
+      } else {
+        setNotifications((prev) => [res, ...prev]);
+      }
+    });
+
+    return () => {
+      socket.off("getMessage");
+      socket.off("getNotification");
+    };
   }, [socket, currentChat]);
 
   const fetchMessagesByChatId = async (_id) => {
@@ -74,7 +96,7 @@ export const ChatContextComponent = ({ children, user, allUsers }) => {
         method: "GET",
       };
       let resp = await ServiceRequest(obj);
-      console.log("resp=>", resp.data);
+
       if (resp.data.status == _const.SERVICE_FAILURE) {
         console.log("fetchMessagesByChatId failure=>", resp?.data);
         return;
@@ -98,7 +120,7 @@ export const ChatContextComponent = ({ children, user, allUsers }) => {
         console.log("sendMessageToUser failure=>", resp?.data);
         return;
       }
-      console.log("resp.data=>", resp.data);
+
       setNewMessage(resp?.data?.data || data);
       fetchMessagesByChatId(data.chatId);
     } catch (error) {
@@ -130,7 +152,7 @@ export const ChatContextComponent = ({ children, user, allUsers }) => {
     setCurrentChat(chatInfo);
     const newChatUser = getUserFromChat(user._id, chatInfo.members, allUsers);
     setCurrentChatUser(newChatUser);
-    console.log("updateCurrentChatAndUser", onlineUsers);
+
     if (
       onlineUsers.length &&
       onlineUsers.some((onlineUser) => onlineUser.userId === newChatUser._id)
@@ -138,13 +160,22 @@ export const ChatContextComponent = ({ children, user, allUsers }) => {
       setIsCurrentChatOnline(true);
     } else setIsCurrentChatOnline(false);
   };
-  console.log("ChatContextComponent", onlineUsers);
+
   useEffect(() => {
     if (user?._id) {
       fetchAllChatsByUser(user._id);
     }
   }, [user]);
 
+  const markAllNotificationsAsread = useCallback((allNotifications) => {
+    console.log("allNotifications", allNotifications);
+    const notificationsRead = allNotifications.map((n) => {
+      return { ...n, isRead: true };
+    });
+    console.log("notificationsRead", notificationsRead);
+    setNotifications([notificationsRead[0]]);
+  }, []);
+  console.log("notifications", notifications);
   return (
     <ChatContext.Provider
       value={{
@@ -164,6 +195,9 @@ export const ChatContextComponent = ({ children, user, allUsers }) => {
         setMessages,
         newMessage,
         setNewMessage,
+        notifications,
+        setNotifications,
+        markAllNotificationsAsread,
       }}
     >
       {children}

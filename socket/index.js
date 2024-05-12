@@ -16,9 +16,18 @@ io.on("connection", (socket) => {
   });
 
   socket.on("sendMessage", (message) => {
-    const user = onlineUsers.find((user_) => user_.userId === message.recepientId);
-    console.log("sendMessage=>",message)
-    if (user) io.to(user.socketId).emit("getMessage", message);
+    const user = onlineUsers.find(
+      (user_) => user_.userId === message.recepientId
+    );
+    console.log("sendMessage=>", message);
+    if (user) {
+      io.to(user.socketId).emit("getMessage", message);
+      io.to(user.socketId).emit("getNotification", {
+        senderId: message.senderId,
+        isRead: false,
+        date: new Date(),
+      });
+    }
   });
 
   socket.on("disconnect", () => {

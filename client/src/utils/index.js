@@ -93,5 +93,13 @@ export const getFormattedTime = (date) => {
     // For older messages, display date
     formattedTime = createdAt.format("MMM D, YYYY") + ", " + formattedTime;
   }
-  return formattedTime.toLowerCase()
+  return formattedTime.toLowerCase();
+};
+
+export const checkIsUserOnline = (userId, users = []) => {
+  return users.some((user) => user.userId === userId);
+};
+
+export const unreadNotificationsFunc = (notifications) => {
+  return notifications.filter((notfication) => notfication.isRead === false);
 };
