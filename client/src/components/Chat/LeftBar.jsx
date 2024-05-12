@@ -11,9 +11,10 @@ import { ChatContext } from "../context/chat-context";
 import _const from "../../common/const";
 
 const LeftBar = () => {
+
   const [isNewChat, setIsNewChat] = useState(false);
   const { user, allUsers } = useContext(UserContext);
-  const { userChats, fetchAllChatsByUser, currentChat, setCurrentChat } =
+  const { userChats, fetchAllChatsByUser, isCurrentChatOnline, updateCurrentChatAndUser } =
     useContext(ChatContext);
 
   const handleCreateChat = async (newUser) => {
@@ -25,7 +26,7 @@ const LeftBar = () => {
     });
 
     if (oldChat) {
-      setCurrentChat(oldChat);
+      updateCurrentChatAndUser(oldChat);
       return;
     }
 

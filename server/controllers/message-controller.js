@@ -4,8 +4,8 @@ const createMessage = async (req, res) => {
   try {
     const message = new MessageModel(req.body);
     await message.save();
-    console.log("createMessage => success");
-    res.json({ status: "success" });
+    console.log("createMessage => success", message);
+    res.json({ status: "success", data: message });
   } catch (error) {
     console.error("createMessage error:", error);
     res

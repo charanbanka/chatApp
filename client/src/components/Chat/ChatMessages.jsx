@@ -19,13 +19,22 @@ import ServiceRequest from "../../utils/service-request";
 import { MessageContext } from "../context/message-context";
 import LockIcon from "@mui/icons-material/Lock";
 import HourglassEmptyIcon from "@mui/icons-material/HourglassEmpty";
+import CircleIcon from "@mui/icons-material/Circle";
+import { ChatContext } from "../context/chat-context";
 
-const ChatMessages = ({ currentChat }) => {
+const ChatMessages = () => {
   const { user, allUsers } = useContext(UserContext);
-  const { messages, setMessages, sendMessageToUser } =
-    useContext(MessageContext);
-  const textRef = useRef();
+  const {
+    messages,
+    setMessages,
+    sendMessageToUser,
+    currentChat,
+    isCurrentChatOnline,
+    newMessage,
+    setNewMessage,
+  } = useContext(ChatContext);
 
+  const textRef = useRef();
   if (!currentChat?._id)
     return (
       <Stack
@@ -48,10 +57,8 @@ const ChatMessages = ({ currentChat }) => {
       </Stack>
     );
 
-  console.log("mesages", messages);
-
+  console.log("isCurrentChatOnline in chat", isCurrentChatOnline);
   const handleSubmit = () => {
-    console.log(textRef.current.value);
     const text = textRef.current.value;
     const senderId = user?._id;
     const chatId = currentChat?._id;
@@ -97,20 +104,15 @@ const ChatMessages = ({ currentChat }) => {
               },
             }}
             onClick={handleSubmit}
-            onKeyDown={(event) => {
-              if (event.key === "Enter") {
-                handleSubmit();
-              }
-            }}
           />
         </div>
       </Stack>
     );
   };
-
+console.log("messages",messages,newMessage)
   const ShowMessages = () => {
     return (
-      <Stack sx={{ p: 1, color: "white", overflowY: "auto", height: "85%" }}>
+      <Stack sx={{ p: 1, color: "white", overflowY: "auto", height: "82%" }}>
         <Typography
           sx={{ textAlign: "center", color: "grey", textAlign: "center" }}
         >
@@ -119,7 +121,7 @@ const ChatMessages = ({ currentChat }) => {
         </Typography>
 
         <List sx={{ p: 2 }}>
-          {messages.length > 0 &&
+          {messages?.length > 0 &&
             messages.map((msg) => {
               return (
                 <ListItem
@@ -159,7 +161,7 @@ const ChatMessages = ({ currentChat }) => {
                         color:
                           msg.senderId === user._id
                             ? "rgb(179 ,164, 163)"
-                            : "#d1c6c6;",
+                            : "#d1c6c6",
                       }}
                     >
                       {getFormattedTime(msg.createdAt)}
@@ -216,13 +218,14 @@ const ChatMessages = ({ currentChat }) => {
               >
                 {chatUser.name}
               </Typography>
-              {/* <Stack direction={"row"} sx={{ alignItems: "center" }}>
-            <CircleIcon color="success" fontSize="8px" />
-            <Typography sx={{ color: "white", fontSize: "16px" }}>
-              {" "}
-              {"online"}
-            </Typography>
-          </Stack> */}
+              {isCurrentChatOnline && (
+                <Stack direction={"row"} sx={{ alignItems: "left" }}>
+                  <Typography sx={{ color: "lightgreen", fontSize: "16px" }}>
+                    {" "}
+                    {"online"}
+                  </Typography>
+                </Stack>
+              )}
             </Stack>
           </Stack>
           <Stack>

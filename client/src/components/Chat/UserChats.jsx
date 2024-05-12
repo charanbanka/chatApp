@@ -1,6 +1,7 @@
 import React, { useContext } from "react";
 import { ListItemContent, ListItemDecorator } from "@mui/joy";
 import {
+  getFormattedTime,
   getRandomColor,
   getUserById,
   getUserFromChat,
@@ -13,9 +14,9 @@ import { MessageContext } from "../context/message-context";
 
 const UserChats = () => {
   const { user, allUsers } = useContext(UserContext);
-  const { userChats, currentChat, setCurrentChat } = useContext(ChatContext);
-  const { messages } = useContext(MessageContext);
-  console.log("setCurrentChat", currentChat);
+  const { userChats, currentChat, updateCurrentChatAndUser, messages } =
+    useContext(ChatContext);
+
   return (
     <div
       style={{
@@ -29,10 +30,11 @@ const UserChats = () => {
         sx={{
           "--ListItemDecorator-size": "56px",
           color: "white",
+          pb: 0,
         }}
       >
         {userChats.length > 0 &&
-          userChats.map((item) => {
+          userChats.map((item, idx) => {
             const _user = getUserFromChat(user._id, item.members, allUsers);
 
             return (
@@ -44,9 +46,12 @@ const UserChats = () => {
                   borderBottom: "1px solid grey",
                   pt: "10px",
                   pb: "10px",
+                  "&:hover": {
+                    bgcolor: "#223841;",
+                  },
                 }}
                 onClick={() => {
-                  setCurrentChat(item);
+                  updateCurrentChatAndUser(item);
                 }}
               >
                 <ListItem>
@@ -77,7 +82,13 @@ const UserChats = () => {
                       >
                         {_user?.name}
                       </Typography>
-                      <Typography variant="caption">12: 30</Typography>
+                      {messages?.[messages.length - 1]?.createdAt && (
+                        <Typography variant="caption">
+                          {getFormattedTime(
+                            messages?.[messages.length - 1]?.createdAt
+                          )}
+                        </Typography>
+                      )}
                     </Stack>
 
                     <Typography

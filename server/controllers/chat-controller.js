@@ -20,7 +20,7 @@ const createChat = async (req, res) => {
     await chat.save();
 
     // Return success response
-    res.json({ status: "success" });
+    res.json({ status: "success", data: chat });
   } catch (error) {
     console.error("createChat error:", error);
     res.status(500).json({

@@ -7,10 +7,10 @@ import { ChatContextComponent } from "./components/context/chat-context";
 import Chat from "./pages/Chat";
 
 const App = () => {
-  const { user } = useContext(UserContext);
+  const { user,allUsers } = useContext(UserContext);
 
   return (
-    <ChatContextComponent user={user}>
+    <ChatContextComponent user={user} allUsers={allUsers}>
       <Routes>
         <Route
           path="/"

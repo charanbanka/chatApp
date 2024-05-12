@@ -5,7 +5,12 @@ import _const from "../../common/const";
 
 export const MessageContext = createContext();
 
-export const MessageContextComponent = ({ children, user, currentChat }) => {
+export const MessageContextComponent = ({
+  children,
+  user,
+  currentChat,
+  setMessage,
+}) => {
   const [messages, setMessages] = useState([]);
   const fetchMessagesByChatId = async (_id) => {
     try {
@@ -38,6 +43,7 @@ export const MessageContextComponent = ({ children, user, currentChat }) => {
         console.log("sendMessageToUser failure=>", resp?.data);
         return;
       }
+      setMessage(data);
       fetchMessagesByChatId(data.chatId);
     } catch (error) {
       console.log("sendMessageToUser error=>", error);
@@ -49,6 +55,8 @@ export const MessageContextComponent = ({ children, user, currentChat }) => {
       fetchMessagesByChatId(currentChat._id);
     }
   }, [currentChat]);
+
+
 
   return (
     <MessageContext.Provider

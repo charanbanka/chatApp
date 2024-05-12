@@ -11,7 +11,7 @@ import { MessageContextComponent } from "../components/context/message-context";
 
 const Chat = () => {
   const { user } = useContext(UserContext);
-  const { currentChat } = useContext(ChatContext);
+
   const navigate = useNavigate();
   const token = localStorage.getItem(constants.TOKEN);
 
@@ -29,16 +29,14 @@ const Chat = () => {
 
   return (
     <div>
-      <MessageContextComponent user={user} currentChat={currentChat}>
-        <Grid container>
-          <Grid item xs={3.5}>
-            <LeftBar />
-          </Grid>
-          <Grid item xs={8.5}>
-            <ChatMessages currentChat={currentChat} />
-          </Grid>
+      <Grid container>
+        <Grid item xs={3.5}>
+          <LeftBar />
         </Grid>
-      </MessageContextComponent>
+        <Grid item xs={8.5}>
+          <ChatMessages />
+        </Grid>
+      </Grid>
     </div>
   );
 };
