@@ -1,5 +1,5 @@
-import React, { useContext } from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import React, { useContext, useEffect } from "react";
+import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import { UserContext } from "./components/context/user-context";
@@ -7,7 +7,19 @@ import { ChatContextComponent } from "./components/context/chat-context";
 import Chat from "./pages/Chat";
 
 const App = () => {
-  const { user,allUsers } = useContext(UserContext);
+  const { user, allUsers } = useContext(UserContext);
+  const navigate = useNavigate();
+  useEffect(() => {
+    let token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/login");
+    }
+    let expiresIn = localStorage.getItem("expiresIn");
+    if (!expiresIn && expiresIn <= new Date()) {
+      localStorage.clear();
+      navigate("/login");
+    }
+  }, [navigate]);
 
   return (
     <ChatContextComponent user={user} allUsers={allUsers}>

@@ -1,28 +1,28 @@
-import React, { useContext } from "react";
-import { ListItemContent, ListItemDecorator } from "@mui/joy";
-import {
-  checkIsUserOnline,
-  getFormattedTime,
-  getRandomColor,
-  getUserById,
-  getUserFromChat,
-  getUserIdFromMembers,
-} from "../../utils";
+import React, { useContext, useMemo } from "react";
+import { getUserFromChat, unreadNotificationsFunc } from "../../utils";
 import { UserContext } from "../context/user-context";
 import { ChatContext } from "../context/chat-context";
-import { Avatar, List, ListItem, Stack, Typography } from "@mui/material";
-import { MessageContext } from "../context/message-context";
+import { List } from "@mui/material";
+import useFetchLatestMessage from "../hooks/useFetchLatestMessage";
+import UserChatBox from "./UserChatBox";
 
 const UserChats = () => {
   const { user, allUsers } = useContext(UserContext);
   const {
     userChats,
-    currentChat,
-    currentChatUser,
-    updateCurrentChatAndUser,
-    messages,
-    onlineUsers,
+
+    notifications,
   } = useContext(ChatContext);
+
+  const unreadNotifications = unreadNotificationsFunc(notifications);
+  const userWiseNotificationsMap = useMemo(() => {
+    let map = new Map();
+    unreadNotifications.map((un) => {
+      let value = map.get(un.senderId) || 0;
+      map.set(un.senderId, value + 1);
+    });
+    return map;
+  }, [notifications]);
 
   return (
     <div
@@ -41,89 +41,15 @@ const UserChats = () => {
         }}
       >
         {userChats.length > 0 &&
-          userChats.map((item, idx) => {
-            const _user = getUserFromChat(user._id, item.members, allUsers);
-
+          userChats.map((chat, idx) => {
+            const _user = getUserFromChat(user._id, chat.members, allUsers);
             return (
-              <Stack
-                key={item._id}
-                sx={{
-                  bgcolor: item?._id === currentChat?._id ? "#223851;" : "",
-                  cursor: "pointer",
-                  borderBottom: "1px solid grey",
-                  pt: "10px",
-                  pb: "10px",
-                  "&:hover": {
-                    bgcolor: "#223841;",
-                  },
-                }}
-                onClick={() => {
-                  updateCurrentChatAndUser(item);
-                }}
-              >
-                <ListItem>
-                  <ListItemDecorator>
-                    <Avatar
-                      sx={{
-                        bgcolor: getRandomColor(),
-                        cursor: "pointer",
-                        textTransform: "uppercase",
-                      }}
-                    >
-                      {_user?.name?.[0]}
-                    </Avatar>
-                  </ListItemDecorator>
-                  <ListItemContent>
-                    <Stack
-                      direction={"row"}
-                      sx={{ justifyContent: "space-between" }}
-                    >
-                      <Typography
-                        level="title-sm"
-                        sx={{
-                          textTransform: "capitalize",
-                          color: "white",
-                          fontSize: "16px",
-                          fontWeight: 700,
-                        }}
-                      >
-                        {_user?.name}
-                      </Typography>
-                      {checkIsUserOnline(_user?._id, onlineUsers) ? (
-                        <Typography color="green">online</Typography>
-                      ) : (
-                        messages?.[messages.length - 1]?.createdAt && (
-                          <Typography variant="caption">
-                            {getFormattedTime(
-                              messages?.[messages.length - 1]?.createdAt
-                            )}
-                          </Typography>
-                        )
-                      )}
-                    </Stack>
-
-                    <Typography
-                      level="body-sm"
-                      variant="caption"
-                      sx={{
-                        color: "lightgray",
-                        fontWeight: 500,
-                        textSize: "12px",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        display: "-webkit-box",
-                        WebkitBoxOrient: "vertical",
-                        WebkitLineClamp: 1,
-                      }}
-                    >
-                      {messages?.[messages.length - 1]?.text}
-                    </Typography>
-                  </ListItemContent>
-                </ListItem>
-                {/* <ListDivider
-                  sx={{ backgroundColor: "#000000",m:0, p:0, ml: 1.5, mr: 1.5 }}
-                /> */}
-              </Stack>
+              <UserChatBox
+                key={chat._id}
+                chat={chat}
+                curChatUser={_user}
+                userWiseNotificationsMap={userWiseNotificationsMap}
+              />
             );
           })}
       </List>

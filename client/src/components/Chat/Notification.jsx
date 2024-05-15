@@ -9,11 +9,17 @@ import { getFormattedTime, unreadNotificationsFunc } from "../../utils";
 const Notification = () => {
   const [open, setOpen] = useState(false);
   const { user, allUsers } = useContext(UserContext);
-  const { notifications, markAllNotificationsAsread } = useContext(ChatContext);
+  const {
+    userChats,
+    currentChat,
+    notifications,
+    markAllNotificationsAsread,
+    markNotificationAsread,
+  } = useContext(ChatContext);
   const [notificationCount, setNotificationCount] = useState(1);
 
   const unreadNotifications = unreadNotificationsFunc(notifications);
-  console.log("alaljhjh=>", allUsers, notifications);
+
   const modifiedNotifications = notifications.map((n) => {
     const senderUser = allUsers.find((u) => u._id === n.senderId);
     return { ...n, senderName: senderUser?.name };
@@ -26,13 +32,21 @@ const Notification = () => {
     setOpen(!open);
   };
 
+  const handleNotificationClick = (n) => {
+    markNotificationAsread(n, userChats, notifications, user);
+    setOpen(false);
+  };
+
   return (
     <div style={{ position: "relative" }}>
-      <Badge badgeContent={unreadNotifications.length} color="success">
+      <Badge badgeContent={unreadNotifications.length} color="error">
         <ChatBubbleIcon
-          
           onClick={handleNotification}
-          sx={{ cursor: "pointer", color: "lightgrey", "&:hover": { color: "white" } }}
+          sx={{
+            cursor: "pointer",
+            color: "lightgrey",
+            "&:hover": { color: "white" },
+          }}
         />
       </Badge>
       {open && (
@@ -66,12 +80,16 @@ const Notification = () => {
           <Stack>
             {modifiedNotifications?.length ? (
               modifiedNotifications.map((n, idx) => {
-                console.log("jhef", n);
                 return (
                   <Stack
                     key={n?._id + idx}
                     bgcolor={n.isRead ? "" : "#052c54"}
-                    sx={{ p: 1, borderBottom: "1px solid grey" }}
+                    sx={{
+                      p: 1,
+                      borderBottom: "1px solid grey",
+                      cursor: "pointer",
+                    }}
+                    onClick={() => handleNotificationClick(n)}
                   >
                     <Typography variant="body1">
                       {n.senderName} sent you a new message

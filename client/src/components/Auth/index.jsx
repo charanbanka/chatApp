@@ -66,6 +66,7 @@ export default function Auth({ setState, signIn, redirectUrl }) {
     });
     setError("");
     localStorage.setItem("token", respData.data.token);
+    localStorage.setItem("expiresIn", respData.data.expiresIn);
     updateUserDetails(respData.data);
     navigate("/");
   };

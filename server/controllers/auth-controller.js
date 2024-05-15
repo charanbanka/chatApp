@@ -36,11 +36,22 @@ const signIn = async (req, res) => {
         message: "Invalid user or password...",
       });
 
+    // Calculate expiry date: current date + 1 day (24 hours)
+    const expiryDate = new Date();
+    expiryDate.setDate(expiryDate.getDate() + 1);
+
+    // Create token
     const token = createToken({ _id: user._id });
 
     return res.json({
       status: SERVICE_SUCCESS,
-      data: { token, _id: user._id, name: user.name, email },
+      data: {
+        token,
+        _id: user._id,
+        name: user.name,
+        email,
+        expiresIn: expiryDate,
+      },
     });
   } catch (error) {
     console.error("signIn error:", error);

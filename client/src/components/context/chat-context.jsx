@@ -172,9 +172,32 @@ export const ChatContextComponent = ({ children, user, allUsers }) => {
     const notificationsRead = allNotifications.map((n) => {
       return { ...n, isRead: true };
     });
-    console.log("notificationsRead", notificationsRead);
-    setNotifications([notificationsRead[0]]);
+    console.log("n");
+    setNotifications(notificationsRead);
   }, []);
+
+  const markNotificationAsread = useCallback(
+    (n, userChats, notifications, user) => {
+      const curChat = userChats.find((chat) => {
+        let members = [user._id, n.senderId];
+        let isCurChat = chat.members.every((mem) => {
+          return members.includes(mem);
+        });
+        return isCurChat;
+      });
+      console.log("curChat=>", curChat);
+      const mNotifications = notifications.map((nt) => {
+        if (nt.senderId === n.senderId) {
+          return { ...nt, isRead: true };
+        } else {
+          return nt;
+        }
+      });
+      setCurrentChat(curChat);
+      setNotifications(mNotifications);
+    },
+    []
+  );
   console.log("notifications", notifications);
   return (
     <ChatContext.Provider
@@ -198,6 +221,7 @@ export const ChatContextComponent = ({ children, user, allUsers }) => {
         notifications,
         setNotifications,
         markAllNotificationsAsread,
+        markNotificationAsread,
       }}
     >
       {children}
