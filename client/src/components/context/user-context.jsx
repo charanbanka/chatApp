@@ -6,7 +6,7 @@ import _const from "../../common/const";
 export const UserContext = createContext();
 
 export const UserContextComponent = ({ children }) => {
-  const [user, setUser] = useState({});
+  const [user, setUser] = useState(null);
   const [allUsers, setAllUsers] = useState([]);
 
   function updateUserDetails(data) {
@@ -38,14 +38,12 @@ export const UserContextComponent = ({ children }) => {
   };
 
   useEffect(() => {
-    if (!user?.name && token) {
+    if (!user && token) {
       getUserDetails();
     }
-    if (user.name) {
+    if (user) {
       fetchAllUsers();
     }
-
-   
   }, [user, token]);
 
   return (

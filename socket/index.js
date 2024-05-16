@@ -6,10 +6,10 @@ let onlineUsers = [];
 io.on("connection", (socket) => {
   console.log("new socket connected", socket.id);
 
-  socket.on("addNewUser", (userId) => {
+  socket.on("addNewUser", ({ userId, bgcolor }) => {
     //check if already exist
     !onlineUsers.some((user) => user.userId === userId) &&
-      onlineUsers.push({ userId, socketId: socket.id });
+      onlineUsers.push({ userId, socketId: socket.id, bgcolor });
 
     console.log("onlineUsers=>", onlineUsers);
     io.emit("getOnlineUsers", onlineUsers);

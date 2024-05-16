@@ -36,7 +36,7 @@ export default function Auth({ setState, signIn, redirectUrl }) {
   const { open, message, vertical, horizontal } = notification || {};
 
   useEffect(() => {
-    if (user.name) {
+    if (user) {
       navigate("/");
     }
   }, [user, navigate]);

@@ -1,24 +1,30 @@
 import { useContext, useEffect, useState } from "react";
 import { ChatContext } from "../context/chat-context";
-import { fetchMessagesByChatId } from "../../services/chat-service";
+import { fetchLatestMessageByChatId } from "../../services/chat-service";
 import _const from "../../common/const";
 
-const useFetchLatestMessage = (chat) => {
+const useFetchLatestMessage = (chatId) => {
   const { newMessage, notifications } = useContext(ChatContext);
   const [latestMessage, setLatestMessage] = useState(null);
 
   useEffect(() => {
-    let getMessage = async () => {
-      let resp = await fetchMessagesByChatId(chat._id);
-      if (resp.status == _const.SERVICE_FAILURE) {
-        console.log("fetchMessagesByChatId error=>", resp);
-        return;
+    if (!chatId) return;
+
+    const getMessage = async () => {
+      try {
+        const resp = await fetchLatestMessageByChatId(chatId);
+        if (resp.status === _const.SERVICE_FAILURE) {
+          console.error("fetchLatestMessageByChatId error=>", resp);
+          return;
+        }
+        setLatestMessage(resp.data);
+      } catch (error) {
+        console.error("Error fetching latest message", error);
       }
-      let messages = resp.data;
-      setLatestMessage(messages[messages.length - 1]);
     };
+
     getMessage();
-  }, [newMessage, notifications]);
+  }, [chatId, newMessage, notifications]);
 
   return { latestMessage };
 };

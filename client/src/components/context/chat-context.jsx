@@ -10,7 +10,7 @@ import _const from "../../common/const";
 import ServiceRequest from "../../utils/service-request";
 // ES modules
 import { io } from "socket.io-client";
-import { getUserFromChat } from "../../utils";
+import { getRandomColor, getUserFromChat } from "../../utils";
 
 export const ChatContext = createContext();
 
@@ -31,12 +31,14 @@ export const ChatContextComponent = ({ children, user, allUsers }) => {
 
     return () => newSocket.disconnect();
   }, [user]);
-
   //add online user
-
   useEffect(() => {
     if (socket == null) return;
-    if (user._id) socket.emit("addNewUser", user._id);
+    if (user)
+      socket.emit("addNewUser", {
+        userId: user._id,
+        bgcolor: getRandomColor(),
+      });
     socket.on("getOnlineUsers", (res) => {
       setOnlineUsers(res);
       if (
@@ -58,7 +60,6 @@ export const ChatContextComponent = ({ children, user, allUsers }) => {
       recepientId: currentChatUser._id,
     });
   }, [newMessage]);
-
   //receive message and notification
   useEffect(() => {
     if (socket == null) return;
@@ -74,7 +75,7 @@ export const ChatContextComponent = ({ children, user, allUsers }) => {
     socket.on("getNotification", (res) => {
       console.log("getNotification=>", res);
       const isChatOpen = currentChat?.members?.some(
-        (mem) => mem == res.senderId
+        (mem) => mem === res.senderId
       );
       if (isChatOpen) {
         setNotifications((prev) => [{ ...res, isRead: true }, ...prev]);
@@ -97,7 +98,7 @@ export const ChatContextComponent = ({ children, user, allUsers }) => {
       };
       let resp = await ServiceRequest(obj);
 
-      if (resp.data.status == _const.SERVICE_FAILURE) {
+      if (resp.data.status === _const.SERVICE_FAILURE) {
         console.log("fetchMessagesByChatId failure=>", resp?.data);
         return;
       }
@@ -116,7 +117,7 @@ export const ChatContextComponent = ({ children, user, allUsers }) => {
       };
       let resp = await ServiceRequest(obj);
 
-      if (resp.data.status == _const.SERVICE_FAILURE) {
+      if (resp.data.status === _const.SERVICE_FAILURE) {
         console.log("sendMessageToUser failure=>", resp?.data);
         return;
       }
@@ -150,7 +151,7 @@ export const ChatContextComponent = ({ children, user, allUsers }) => {
 
   const updateCurrentChatAndUser = (chatInfo) => {
     setCurrentChat(chatInfo);
-    const newChatUser = getUserFromChat(user._id, chatInfo.members, allUsers);
+    const newChatUser = getUserFromChat(user?._id, chatInfo.members, allUsers);
     setCurrentChatUser(newChatUser);
 
     if (
@@ -162,21 +163,20 @@ export const ChatContextComponent = ({ children, user, allUsers }) => {
   };
 
   useEffect(() => {
-    if (user?._id) {
+    if (user) {
       fetchAllChatsByUser(user._id);
     }
   }, [user]);
 
-  const markAllNotificationsAsread = useCallback((allNotifications) => {
+  const markAllNotificationsAsRead = useCallback((allNotifications) => {
     console.log("allNotifications", allNotifications);
     const notificationsRead = allNotifications.map((n) => {
       return { ...n, isRead: true };
     });
-    console.log("n");
     setNotifications(notificationsRead);
   }, []);
 
-  const markNotificationAsread = useCallback(
+  const markNotificationAsRead = useCallback(
     (n, userChats, notifications, user) => {
       const curChat = userChats.find((chat) => {
         let members = [user._id, n.senderId];
@@ -198,7 +198,24 @@ export const ChatContextComponent = ({ children, user, allUsers }) => {
     },
     []
   );
+
+  const logout = () => {
+    setUserChats([]);
+    setCurrentChat({});
+    setCurrentChatUser({});
+    setOnlineUsers([]);
+    setIsCurrentChatOnline(false);
+    setMessages([]);
+    setNewMessage({});
+    setNotifications([]);
+    if (socket) {
+      socket.disconnect();
+      setSocket(null);
+    }
+  };
+
   console.log("notifications", notifications);
+
   return (
     <ChatContext.Provider
       value={{
@@ -220,8 +237,9 @@ export const ChatContextComponent = ({ children, user, allUsers }) => {
         setNewMessage,
         notifications,
         setNotifications,
-        markAllNotificationsAsread,
-        markNotificationAsread,
+        markAllNotificationsAsRead,
+        markNotificationAsRead,
+        logout, // Provide the logout function in the context
       }}
     >
       {children}

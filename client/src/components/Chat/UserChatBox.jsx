@@ -1,4 +1,4 @@
-import React, { useContext, useMemo } from "react";
+import React, { useContext, useEffect, useMemo } from "react";
 import { ListItemContent, ListItemDecorator } from "@mui/joy";
 import {
   checkIsUserOnline,
@@ -22,7 +22,7 @@ import {
 import useFetchLatestMessage from "../hooks/useFetchLatestMessage";
 
 const UserChatBox = ({ chat, curChatUser, userWiseNotificationsMap }) => {
-  const { latestMessage } = useFetchLatestMessage(chat);
+  const { latestMessage } = useFetchLatestMessage(chat._id);
   const {
     userChats,
     currentChat,
@@ -31,7 +31,7 @@ const UserChatBox = ({ chat, curChatUser, userWiseNotificationsMap }) => {
     messages,
     onlineUsers,
     notifications,
-    markNotificationAsread,
+    markNotificationAsRead,
   } = useContext(ChatContext);
   const { user } = useContext(UserContext);
   console.log("ltess", latestMessage);
@@ -49,7 +49,7 @@ const UserChatBox = ({ chat, curChatUser, userWiseNotificationsMap }) => {
         },
       }}
       onClick={() => {
-        markNotificationAsread(
+        markNotificationAsRead(
           { senderId: curChatUser?._id },
           userChats,
           notifications,

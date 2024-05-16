@@ -14,7 +14,7 @@ const Notification = () => {
     currentChat,
     notifications,
     markAllNotificationsAsread,
-    markNotificationAsread,
+    markNotificationAsRead,
   } = useContext(ChatContext);
   const [notificationCount, setNotificationCount] = useState(1);
 
@@ -33,7 +33,7 @@ const Notification = () => {
   };
 
   const handleNotificationClick = (n) => {
-    markNotificationAsread(n, userChats, notifications, user);
+    markNotificationAsRead(n, userChats, notifications, user);
     setOpen(false);
   };
 

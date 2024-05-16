@@ -3,16 +3,11 @@ import { getUserFromChat, unreadNotificationsFunc } from "../../utils";
 import { UserContext } from "../context/user-context";
 import { ChatContext } from "../context/chat-context";
 import { List } from "@mui/material";
-import useFetchLatestMessage from "../hooks/useFetchLatestMessage";
 import UserChatBox from "./UserChatBox";
 
 const UserChats = () => {
   const { user, allUsers } = useContext(UserContext);
-  const {
-    userChats,
-
-    notifications,
-  } = useContext(ChatContext);
+  const { userChats, notifications } = useContext(ChatContext);
 
   const unreadNotifications = unreadNotificationsFunc(notifications);
   const userWiseNotificationsMap = useMemo(() => {

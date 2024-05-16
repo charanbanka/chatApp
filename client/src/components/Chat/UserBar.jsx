@@ -5,15 +5,19 @@ import { Dropdown, MenuButton, Menu, MenuItem } from "@mui/joy";
 import { useNavigate } from "react-router-dom";
 import { getRandomColor } from "../../utils";
 import Notification from "./Notification";
+import { ChatContext } from "../context/chat-context";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
 
 const UserBar = () => {
   const [isShow, setIsShow] = useState(false);
   const { user, updateUserDetails } = useContext(UserContext);
+  const { logout } = useContext(ChatContext);
   const navigate = useNavigate();
 
   const handleLogout = () => {
     localStorage.clear();
-    updateUserDetails({});
+    logout();
+    updateUserDetails(null);
     navigate("/login");
   };
 
@@ -30,29 +34,51 @@ const UserBar = () => {
       }}
     >
       <Typography>Chats</Typography>
-
-      <Notification/>
-      <Dropdown>
-        <MenuButton>
-          <Avatar
+      <Stack direction={"row"} spacing={2} sx={{ alignItems: "center" }}>
+        <Notification />
+        <Dropdown>
+          <MenuButton
             sx={{
-              bgcolor: getRandomColor(),
-              cursor: "pointer",
-              textTransform: "uppercase",
-              position: "relative",
+              backgroundColor: "transparent",
+              border: "none",
+              p: 0,
+              "&:hover": {
+                backgroundColor: "transparent",
+                border: "none",
+                p: 0,
+              },
             }}
-            onClick={() => setIsShow(!isShow)}
           >
-            {user?.name && user?.name?.[0]}
-          </Avatar>
-        </MenuButton>
-        <Menu>
-          <MenuItem sx={{ textTransform: "capitalize" }}>{user.name}</MenuItem>
-          <MenuItem onClick={handleLogout} sx={{ color: "red" }}>
-            Logout
-          </MenuItem>
-        </Menu>
-      </Dropdown>
+            <Avatar
+              sx={{
+                bgcolor: getRandomColor(),
+                cursor: "pointer",
+                textTransform: "uppercase",
+                position: "relative",
+                transition: "transform 0.3s", // Add transition for smooth effect
+                "&:hover": {
+                  transform: "scale(1.1)", // Scale down by 10% on hover
+                  color: "black",
+                },
+              }}
+              onClick={() => setIsShow(!isShow)}
+            >
+              {user?.name && user?.name?.[0]}
+            </Avatar>
+          </MenuButton>
+          <Menu>
+            <MenuItem sx={{ textTransform: "capitalize" }}>
+              {user.name}
+            </MenuItem>
+            <MenuItem onClick={handleLogout} sx={{ color: "red" }}>
+              Logout
+            </MenuItem>
+          </Menu>
+        </Dropdown>
+        <MoreVertIcon
+          sx={{ cursor: "pointer", "&:hover": { color: "lightgrey" } }}
+        />
+      </Stack>
     </Stack>
   );
 };

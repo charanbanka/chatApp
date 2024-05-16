@@ -19,3 +19,22 @@ export const fetchMessagesByChatId = async (_id) => {
     };
   }
 };
+
+
+export const fetchLatestMessageByChatId = async (_id) => {
+  try {
+    let obj = {
+      url: `${config.baseurl}/messages/chat/latestMessage/${_id}`,
+      method: "GET",
+    };
+    let resp = await ServiceRequest(obj);
+
+    return resp.data;
+  } catch (error) {
+    console.log("fetchMessagesByChatId error=>", error);
+    return {
+      status: _const.SERVICE_FAILURE,
+      message: error.message,
+    };
+  }
+};
