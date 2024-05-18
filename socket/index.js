@@ -19,7 +19,7 @@ io.on("connection", (socket) => {
     const user = onlineUsers.find(
       (user_) => user_.userId === message.recepientId
     );
-    console.log("sendMessage=>", message);
+
     if (user) {
       io.to(user.socketId).emit("getMessage", message);
       io.to(user.socketId).emit("getNotification", {
@@ -27,6 +27,20 @@ io.on("connection", (socket) => {
         isRead: false,
         date: new Date(),
       });
+    }
+  });
+
+  socket.on("sendChat", (chat) => {
+    const user = onlineUsers.find((user_) => user_.userId === chat.recepientId);
+
+    if (user) {
+      io.to(user.socketId).emit("getChat", chat);
+      // io.to(user.socketId).emit("getNotification", {
+      //   senderId: chat.senderId,
+      //   isRead: false,
+      //   date: new Date(),
+      //   isChat: true,
+      // });
     }
   });
 

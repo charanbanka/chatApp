@@ -18,6 +18,7 @@ export const ChatContextComponent = ({ children, user, allUsers }) => {
   const [userChats, setUserChats] = useState([]);
   const [currentChat, setCurrentChat] = useState({});
   const [currentChatUser, setCurrentChatUser] = useState({});
+  const [newChat, setNewChat] = useState({});
   const [socket, setSocket] = useState(null);
   const [onlineUsers, setOnlineUsers] = useState([]);
   const [isCurrentChatOnline, setIsCurrentChatOnline] = useState(false);
@@ -28,7 +29,9 @@ export const ChatContextComponent = ({ children, user, allUsers }) => {
   useEffect(() => {
     let newSocket = io("http://localhost:5000/");
     setSocket(newSocket);
-
+    if (user) {
+      fetchAllChatsByUser(user._id);
+    }
     return () => newSocket.disconnect();
   }, [user]);
   //add online user
@@ -65,7 +68,7 @@ export const ChatContextComponent = ({ children, user, allUsers }) => {
     if (socket == null) return;
 
     socket.on("getMessage", (res) => {
-      console.log("getMessage=>", res);
+      console.log("getMessage=>", res, currentChat);
       if (res.chatId !== currentChat._id) return;
       setMessages((prev) => {
         return [...prev, res];
@@ -88,7 +91,50 @@ export const ChatContextComponent = ({ children, user, allUsers }) => {
       socket.off("getMessage");
       socket.off("getNotification");
     };
-  }, [socket, currentChat]);
+  }, [socket]);
+
+  //send chat
+  useEffect(() => {
+    if (socket == null) return;
+
+    socket.emit("sendChat", { ...newChat, senderId: user._id });
+  }, [newChat]);
+
+  //receive chat and notification
+  useEffect(() => {
+    if (socket == null) return;
+
+    socket.on("getChat", (res) => {
+      console.log("getChat=>", res);
+      // if (res.chatId !== currentChat._id) return;
+      setUserChats((prev) => {
+        return [res, ...prev];
+      });
+    });
+
+    // socket.on("getNotification", (res) => {
+    //   console.log("getNotification=>", res);
+    //   const isChatOpen = currentChat?.members?.some(
+    //     (mem) => mem === res.senderId
+    //   );
+    //   if (isChatOpen) {
+    //     setNotifications((prev) => [{ ...res, isRead: true }, ...prev]);
+    //   } else {
+    //     setNotifications((prev) => [res, ...prev]);
+    //   }
+    // });
+
+    return () => {
+      socket.off("getChat");
+      // socket.off("getNotification");
+    };
+  }, [socket]);
+
+  useEffect(() => {
+    if (currentChat?._id) {
+      fetchMessagesByChatId(currentChat._id);
+    }
+  }, [currentChat]);
 
   const fetchMessagesByChatId = async (_id) => {
     try {
@@ -129,12 +175,6 @@ export const ChatContextComponent = ({ children, user, allUsers }) => {
     }
   };
 
-  useEffect(() => {
-    if (currentChat?._id) {
-      fetchMessagesByChatId(currentChat._id);
-    }
-  }, [currentChat]);
-
   const fetchAllChatsByUser = async (user_id) => {
     try {
       let url = `${config.baseurl}/chats/${user_id}`;
@@ -161,12 +201,6 @@ export const ChatContextComponent = ({ children, user, allUsers }) => {
       setIsCurrentChatOnline(true);
     } else setIsCurrentChatOnline(false);
   };
-
-  useEffect(() => {
-    if (user) {
-      fetchAllChatsByUser(user._id);
-    }
-  }, [user]);
 
   const markAllNotificationsAsRead = useCallback((allNotifications) => {
     console.log("allNotifications", allNotifications);
@@ -199,6 +233,34 @@ export const ChatContextComponent = ({ children, user, allUsers }) => {
     []
   );
 
+  const handleCreateChat = async (user, newUser, userChats) => {
+    const members = [user._id, newUser._id];
+    let oldChat = userChats.find((chat) => {
+      if (chat.members.some((_id) => newUser._id == _id)) return chat;
+      // const sortedMembers = chat.members.slice().sort((a, b) => a - b); // Sort the members array
+      // return JSON.stringify(sortedMembers) === JSON.stringify(members); // Compare sorted arrays as strings
+    });
+
+    if (oldChat) {
+      setCurrentChat(oldChat);
+      return;
+    }
+
+    let obj = {
+      url: `${config.baseurl}/chats`,
+      method: "POST",
+      data: { members },
+    };
+    let resp = await ServiceRequest(obj);
+
+    if (resp.data.status == _const.SERVICE_FAILURE) {
+      console.log("handleCreateChat=>", resp.data);
+      return;
+    }
+    setNewChat({ ...resp?.data?.data, recepientId: newUser._id });
+    fetchAllChatsByUser(user?._id);
+  };
+
   const logout = () => {
     setUserChats([]);
     setCurrentChat({});
@@ -208,13 +270,12 @@ export const ChatContextComponent = ({ children, user, allUsers }) => {
     setMessages([]);
     setNewMessage({});
     setNotifications([]);
+    setNewChat({});
     if (socket) {
       socket.disconnect();
       setSocket(null);
     }
   };
-
-  console.log("notifications", notifications);
 
   return (
     <ChatContext.Provider
@@ -239,6 +300,7 @@ export const ChatContextComponent = ({ children, user, allUsers }) => {
         setNotifications,
         markAllNotificationsAsRead,
         markNotificationAsRead,
+        handleCreateChat,
         logout, // Provide the logout function in the context
       }}
     >

@@ -96,6 +96,51 @@ export const getFormattedTime = (date) => {
   return formattedTime.toLowerCase();
 };
 
+export const getFormattedTimeForMessages = (date) => {
+  const createdAt = moment(date);
+  let formattedTime = createdAt.format("h:mm A");
+
+  // Check if created today
+  if (moment().isSame(createdAt, "day")) {
+    formattedTime = "Today& " + formattedTime;
+  } else if (moment().subtract(1, "day").isSame(createdAt, "day")) {
+    // Check if created yesterday
+    formattedTime = "Yesterday& " + formattedTime.toLowerCase();
+  } else if (moment().subtract(7, "days").isBefore(createdAt)) {
+    // Check if created within the last week
+    formattedTime = createdAt.format("dddd& ") + formattedTime;
+  } else if (moment().subtract(1, "month").isBefore(createdAt)) {
+    // Check if created within the last month
+    formattedTime = createdAt.format("MMM D& ") + formattedTime;
+  } else {
+    // For older messages, display date
+    formattedTime = createdAt.format("MMM D, YYYY") + "& " + formattedTime;
+  }
+  return formattedTime.toLowerCase();
+};
+
+export const getFormattedTimeForUserChats = (date) => {
+  const createdAt = moment(date);
+  let formattedTime = createdAt.format("h:mm A");
+
+  // Check if created today
+  if (moment().isSame(createdAt, "day")) {
+    formattedTime = formattedTime; // same day
+  } else if (moment().subtract(1, "day").isSame(createdAt, "day")) {
+    // Check if created yesterday
+    formattedTime = "Yesterday"; //yesterday
+  } else if (moment().subtract(7, "days").isBefore(createdAt)) {
+    // Check if created within the last week
+    formattedTime = createdAt.format("dddd");
+  } else if (moment().subtract(1, "month").isBefore(createdAt)) {
+    // Check if created within the last month
+    formattedTime = createdAt.format("MMM D");
+    // For older messages, display date
+    formattedTime = createdAt.format("MMM D, YYYY");
+  }
+  return formattedTime;
+};
+
 export const checkIsUserOnline = (userId, users = []) => {
   return users.some((user) => user.userId === userId);
 };

@@ -1,10 +1,8 @@
 import { useContext, useEffect, useState } from "react";
-import { ChatContext } from "../context/chat-context";
 import { fetchLatestMessageByChatId } from "../../services/chat-service";
 import _const from "../../common/const";
 
-const useFetchLatestMessage = (chatId) => {
-  const { newMessage, notifications } = useContext(ChatContext);
+const useFetchLatestMessage = (chatId, newMessage, thisUserNotification) => {
   const [latestMessage, setLatestMessage] = useState(null);
 
   useEffect(() => {
@@ -24,7 +22,7 @@ const useFetchLatestMessage = (chatId) => {
     };
 
     getMessage();
-  }, [chatId, newMessage, notifications]);
+  }, [newMessage, chatId, thisUserNotification]);
 
   return { latestMessage };
 };

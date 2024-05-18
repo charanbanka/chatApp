@@ -1,13 +1,10 @@
-import React, { useContext, useEffect, useMemo } from "react";
+import React, { useContext, useEffect, useMemo, useState } from "react";
 import { ListItemContent, ListItemDecorator } from "@mui/joy";
 import {
   checkIsUserOnline,
   getFormattedTime,
+  getFormattedTimeForUserChats,
   getRandomColor,
-  getUserById,
-  getUserFromChat,
-  getUserIdFromMembers,
-  unreadNotificationsFunc,
 } from "../../utils";
 import { UserContext } from "../context/user-context";
 import { ChatContext } from "../context/chat-context";
@@ -21,8 +18,8 @@ import {
 } from "@mui/material";
 import useFetchLatestMessage from "../hooks/useFetchLatestMessage";
 
-const UserChatBox = ({ chat, curChatUser, userWiseNotificationsMap }) => {
-  const { latestMessage } = useFetchLatestMessage(chat._id);
+const UserChatBox = ({ chat, curChatUser, thisUserNotification }) => {
+  // const [latestMessage, setLatestMessage] = useState({});
   const {
     userChats,
     currentChat,
@@ -32,9 +29,16 @@ const UserChatBox = ({ chat, curChatUser, userWiseNotificationsMap }) => {
     onlineUsers,
     notifications,
     markNotificationAsRead,
+    newMessage,
   } = useContext(ChatContext);
   const { user } = useContext(UserContext);
-  console.log("ltess", latestMessage);
+
+  const { latestMessage } = useFetchLatestMessage(
+    chat._id,
+    newMessage,
+    thisUserNotification
+  );
+console.log("o=>",thisUserNotification)
   return (
     <Stack
       key={chat._id}
@@ -77,7 +81,7 @@ const UserChatBox = ({ chat, curChatUser, userWiseNotificationsMap }) => {
               sx={{
                 textTransform: "capitalize",
                 color: "white",
-                fontSize: "16px",
+                fontSize: "18px",
                 fontWeight: 700,
               }}
             >
@@ -88,7 +92,7 @@ const UserChatBox = ({ chat, curChatUser, userWiseNotificationsMap }) => {
             ) : (
               latestMessage?.createdAt && (
                 <Typography variant="caption">
-                  {getFormattedTime(latestMessage?.createdAt)}
+                  {getFormattedTimeForUserChats(latestMessage?.createdAt)}
                 </Typography>
               )
             )}
@@ -101,11 +105,11 @@ const UserChatBox = ({ chat, curChatUser, userWiseNotificationsMap }) => {
           >
             <Typography
               level="body-sm"
-              variant="caption"
+              variant="subtitle1"
               sx={{
                 color: "lightgray",
                 fontWeight: 500,
-                textSize: "12px",
+                textSize: "16px",
                 overflow: "hidden",
                 textOverflow: "ellipsis",
                 display: "-webkit-box",
@@ -116,9 +120,9 @@ const UserChatBox = ({ chat, curChatUser, userWiseNotificationsMap }) => {
               {latestMessage?.text}
             </Typography>
             <Typography variant="caption">
-              {userWiseNotificationsMap.get(curChatUser?._id) && (
+              {thisUserNotification?.count && (
                 <Badge
-                  badgeContent={userWiseNotificationsMap.get(curChatUser?._id)}
+                  badgeContent={thisUserNotification?.count}
                   color="success"
                 ></Badge>
               )}

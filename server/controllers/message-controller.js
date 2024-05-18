@@ -42,16 +42,29 @@ const getMessagesByChatId = async (req, res) => {
 const getLatestMessagesByChatId = async (req, res) => {
   try {
     let chatId = req.params.chatId;
-    const latestMessage = await MessageModel.findOne({ chatId })
-      .sort({ createdAt: -1 }) // Sort messages by creation date in descending order
-      .limit(1); // Limit the result to one message
-    res.json({ status: "success", data: latestMessage });
+    let resp = await getLatestMessagesByChatIdService(chatId);
+    res.json(resp);
   } catch (error) {
     console.error("getLatestMessagesByChatId error:", error);
     res.status(500).json({
       status: "failed",
       message: "Failed to retrieve the latest message",
     });
+  }
+};
+
+const getLatestMessagesByChatIdService = async (chatId) => {
+  try {
+    const latestMessage = await MessageModel.findOne({ chatId })
+      .sort({ createdAt: -1 }) // Sort messages by creation date in descending order
+      .limit(1); // Limit the result to one message
+    return { status: "success", data: latestMessage };
+  } catch (error) {
+    console.error("getLatestMessagesByChatId error:", error);
+    return {
+      status: "failed",
+      message: "Failed to retrieve the latest message",
+    };
   }
 };
 
@@ -74,5 +87,6 @@ module.exports = {
   getMessages,
   getMessagesByChatId,
   deleteMessageById,
-  getLatestMessagesByChatId
+  getLatestMessagesByChatId,
+  getLatestMessagesByChatIdService,
 };

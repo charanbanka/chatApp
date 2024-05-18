@@ -5,19 +5,11 @@ import { ChatContext } from "../context/chat-context";
 import { List } from "@mui/material";
 import UserChatBox from "./UserChatBox";
 
-const UserChats = () => {
+const UserChats = ({userWiseNotificationsMap}) => {
   const { user, allUsers } = useContext(UserContext);
   const { userChats, notifications } = useContext(ChatContext);
 
-  const unreadNotifications = unreadNotificationsFunc(notifications);
-  const userWiseNotificationsMap = useMemo(() => {
-    let map = new Map();
-    unreadNotifications.map((un) => {
-      let value = map.get(un.senderId) || 0;
-      map.set(un.senderId, value + 1);
-    });
-    return map;
-  }, [notifications]);
+ 
 
   return (
     <div
@@ -43,7 +35,7 @@ const UserChats = () => {
                 key={chat._id}
                 chat={chat}
                 curChatUser={_user}
-                userWiseNotificationsMap={userWiseNotificationsMap}
+                thisUserNotification={userWiseNotificationsMap.get(_user._id)}
               />
             );
           })}

@@ -6,27 +6,20 @@ import { ChatContext } from "../context/chat-context";
 import { UserContext } from "../context/user-context";
 import { getFormattedTime, unreadNotificationsFunc } from "../../utils";
 
-const Notification = () => {
+const Notification = ({ userWiseNotificationsMap }) => {
   const [open, setOpen] = useState(false);
   const { user, allUsers } = useContext(UserContext);
   const {
     userChats,
     currentChat,
     notifications,
+    setNotifications,
     markAllNotificationsAsread,
     markNotificationAsRead,
   } = useContext(ChatContext);
-  const [notificationCount, setNotificationCount] = useState(1);
 
-  const unreadNotifications = unreadNotificationsFunc(notifications);
-
-  const modifiedNotifications = notifications.map((n) => {
-    const senderUser = allUsers.find((u) => u._id === n.senderId);
-    return { ...n, senderName: senderUser?.name };
-  });
-
-  console.log("un", unreadNotifications);
-  console.log("mn", modifiedNotifications);
+  const unreadNotificationsCount =
+    userWiseNotificationsMap.get("total")?.count || 0;
 
   const handleNotification = () => {
     setOpen(!open);
@@ -36,10 +29,10 @@ const Notification = () => {
     markNotificationAsRead(n, userChats, notifications, user);
     setOpen(false);
   };
-
+  console.log("userWiseNotificationsMap", userWiseNotificationsMap);
   return (
     <div style={{ position: "relative" }}>
-      <Badge badgeContent={unreadNotifications.length} color="error">
+      <Badge badgeContent={unreadNotificationsCount} color="error">
         <ChatBubbleIcon
           onClick={handleNotification}
           sx={{
@@ -70,41 +63,50 @@ const Notification = () => {
             <Typography variant="h6">Notifications</Typography>
             <Typography
               variant="body"
-              color={unreadNotifications?.length ? "white" : "grey"}
-              sx={{ cursor: "pointer", "&:hover": { color: "lightblue" } }}
-              onClick={() => markAllNotificationsAsread(notifications)}
+              color={unreadNotificationsCount ? "white" : "grey"}
+              sx={{ cursor: "pointer", "&:hover": { color: "#0fffff" } }}
+              onClick={() => {
+                if (unreadNotificationsCount) setNotifications([]);
+              }}
             >
               Mark all as read
             </Typography>
           </Stack>
           <Stack>
-            {modifiedNotifications?.length ? (
-              modifiedNotifications.map((n, idx) => {
-                return (
-                  <Stack
-                    key={n?._id + idx}
-                    bgcolor={n.isRead ? "" : "#052c54"}
-                    sx={{
-                      p: 1,
-                      borderBottom: "1px solid grey",
-                      cursor: "pointer",
-                    }}
-                    onClick={() => handleNotificationClick(n)}
+            {Array.from(userWiseNotificationsMap).map(([key, value]) => {
+              if (key == "total") return;
+              return (
+                <Stack
+                  key={key}
+                  bgcolor={false ? "" : "#052c54"}
+                  sx={{
+                    p: 1,
+                    borderBottom: "1px solid grey",
+                    cursor: "pointer",
+                    color:"#fffff",
+                    "&:hover":{
+                      bgcolor: "rgb(1 15 30)",
+                      color: "#0fffff"
+                    }
+                  }}
+                  onClick={() => handleNotificationClick(value)}
+                >
+                  <Typography variant="body1">
+                    {`${value.senderName} sent you ${
+                      value.count > 1 ? value.count : "a"
+                    } new ${value.count > 1 ? "messages" : "message"}`}
+                  </Typography>
+                  <Typography
+                    variant="caption"
+                    color={"grey"}
+                    sx={{ textTransform: "capitalize" }}
                   >
-                    <Typography variant="body1">
-                      {n.senderName} sent you a new message
-                    </Typography>
-                    <Typography
-                      variant="caption"
-                      color={"grey"}
-                      sx={{ textTransform: "capitalize" }}
-                    >
-                      {getFormattedTime(n.date)}
-                    </Typography>
-                  </Stack>
-                );
-              })
-            ) : (
+                    {getFormattedTime(value.date)}
+                  </Typography>
+                </Stack>
+              );
+            })}
+            {userWiseNotificationsMap.size < 2 && (
               <Stack bgcolor="#053c74" sx={{ p: 1 }}>
                 <Typography variant="caption">
                   No notifications yet...

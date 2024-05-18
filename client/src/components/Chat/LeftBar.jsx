@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useMemo, useState } from "react";
 import UserBar from "./UserBar";
 import { Grid, Stack } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
@@ -9,41 +9,34 @@ import config from "../../common/config";
 import ServiceRequest from "../../utils/service-request";
 import { ChatContext } from "../context/chat-context";
 import _const from "../../common/const";
+import { unreadNotificationsFunc } from "../../utils";
 
 const LeftBar = () => {
-
   const [isNewChat, setIsNewChat] = useState(false);
   const { user, allUsers } = useContext(UserContext);
-  const { userChats, fetchAllChatsByUser, isCurrentChatOnline, updateCurrentChatAndUser } =
+  const { userChats, handleCreateChat, notifications } =
     useContext(ChatContext);
+  const unreadNotifications = unreadNotificationsFunc(notifications);
 
-  const handleCreateChat = async (newUser) => {
-    const members = [user._id, newUser._id].sort((a, b) => a - b);
-    let oldChat = userChats.find((chat) => {
-      if (chat.members.some((_id) => newUser._id == _id)) return chat;
-      // const sortedMembers = chat.members.slice().sort((a, b) => a - b); // Sort the members array
-      // return JSON.stringify(sortedMembers) === JSON.stringify(members); // Compare sorted arrays as strings
+  const userWiseNotificationsMap = useMemo(() => {
+    let map = new Map();
+    unreadNotifications.map((un) => {
+      const senderUser = allUsers.find((u) => u._id == un.senderId);
+      let value = map.get(un.senderId) || {
+        count: 0,
+        senderName: senderUser.name,
+        senderId: un.senderId,
+        date: un.date,
+      };
+      map.set(un.senderId, {
+        ...value,
+        count: value.count + 1,
+        date: un.date,
+      });
     });
-
-    if (oldChat) {
-      updateCurrentChatAndUser(oldChat);
-      return;
-    }
-
-    let obj = {
-      url: `${config.baseurl}/chats`,
-      method: "POST",
-      data: { members },
-    };
-    let resp = await ServiceRequest(obj);
-
-    if (resp.data.status == _const.SERVICE_FAILURE) {
-      console.log("handleCreateChat=>", resp.data);
-      return;
-    }
-
-    fetchAllChatsByUser(user?._id);
-  };
+    map.set("total", { count: unreadNotifications.length });
+    return map;
+  }, [notifications]);
 
   return (
     <Stack
@@ -55,7 +48,7 @@ const LeftBar = () => {
       }}
       spacing={1}
     >
-      <UserBar />
+      <UserBar userWiseNotificationsMap={userWiseNotificationsMap} />
 
       <Grid container>
         <Grid item xs={10} sx={{ textAlign: "center" }}>
@@ -83,9 +76,12 @@ const LeftBar = () => {
                   if (item._id == user._id) return;
                   return (
                     <MenuItem
-                      sx={{ textTransform: "capitalize" }}
+                      sx={{
+                        textTransform: "capitalize",
+                        "&:hover": { bgcolor: "blue" },
+                      }}
                       key={item._id}
-                      onClick={() => handleCreateChat(item)}
+                      onClick={() => handleCreateChat(user, item, userChats)}
                     >
                       {item.name}
                     </MenuItem>
@@ -96,7 +92,7 @@ const LeftBar = () => {
         </Grid>
       </Grid>
 
-      <UserChats />
+      <UserChats userWiseNotificationsMap={userWiseNotificationsMap} />
     </Stack>
   );
 };

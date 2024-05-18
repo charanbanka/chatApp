@@ -8,7 +8,7 @@ import Notification from "./Notification";
 import { ChatContext } from "../context/chat-context";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 
-const UserBar = () => {
+const UserBar = ({ userWiseNotificationsMap }) => {
   const [isShow, setIsShow] = useState(false);
   const { user, updateUserDetails } = useContext(UserContext);
   const { logout } = useContext(ChatContext);
@@ -35,7 +35,7 @@ const UserBar = () => {
     >
       <Typography>Chats</Typography>
       <Stack direction={"row"} spacing={2} sx={{ alignItems: "center" }}>
-        <Notification />
+        <Notification userWiseNotificationsMap={userWiseNotificationsMap} />
         <Dropdown>
           <MenuButton
             sx={{
