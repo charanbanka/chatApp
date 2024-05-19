@@ -32,13 +32,16 @@ const UserChatBox = ({ chat, curChatUser, thisUserNotification }) => {
     newMessage,
   } = useContext(ChatContext);
   const { user } = useContext(UserContext);
+  const isCurrentUserNotification =
+    notifications[0]?.senderId == curChatUser._id;
 
   const { latestMessage } = useFetchLatestMessage(
     chat._id,
     newMessage,
-    thisUserNotification
+    thisUserNotification,
+    isCurrentUserNotification
   );
-console.log("o=>",thisUserNotification)
+
   return (
     <Stack
       key={chat._id}

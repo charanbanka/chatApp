@@ -5,11 +5,9 @@ import { ChatContext } from "../context/chat-context";
 import { List } from "@mui/material";
 import UserChatBox from "./UserChatBox";
 
-const UserChats = ({userWiseNotificationsMap}) => {
+const UserChats = ({ userWiseNotificationsMap }) => {
   const { user, allUsers } = useContext(UserContext);
   const { userChats, notifications } = useContext(ChatContext);
-
- 
 
   return (
     <div

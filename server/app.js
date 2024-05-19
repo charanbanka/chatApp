@@ -12,7 +12,15 @@ const app = express();
 app.use(bodyParser.json({ limit: "800kb", extended: true }));
 app.use(bodyParser.urlencoded({ limit: "800kb", extended: true }));
 
-app.use(cors({ origin: "*", methods: ["GET", "POST", "PUT", "DELETE"] }));
+app.use(
+  cors({
+    origin: "*",
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "token"],
+    credentials: true,
+    maxAge: 86400, // 1 day
+  })
+);
 
 app.get("/", (req, res) => {
   res.send("Success");

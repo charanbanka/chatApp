@@ -40,13 +40,7 @@ const ChatMessages = () => {
   } = useContext(ChatContext);
 
   const textRef = useRef();
-  const latestMessageRef = useRef(null);
-  // Scroll to the latest message when messages change
-  useEffect(() => {
-    if (latestMessageRef.current) {
-      latestMessageRef.current.scrollIntoView({});
-    }
-  }, [messages]);
+
   if (!currentChat?._id)
     return (
       <Stack
@@ -75,7 +69,7 @@ const ChatMessages = () => {
     const handleSubmit = (event) => {
       event.preventDefault(); // Prevent default form submission behavior
       // Add your logic to handle the submission here
-      console.log("Message submitted:", message);
+
       // You can clear the input field after submission if needed
       const text = message.trim();
       const senderId = user?._id;
@@ -93,7 +87,7 @@ const ChatMessages = () => {
     };
 
     return (
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} sx={{ position: "relative" }}>
         <Stack
           direction="row"
           sx={{
@@ -109,8 +103,7 @@ const ChatMessages = () => {
         >
           <InputEmoji
             value={message}
-            onChange={setMessage}
-            cleanOnEnter
+            onChange={(text)=>setMessage(text)}
             placeholder="Type a Message"
             borderColor="#aebac1"
             borderRadius="10px"
@@ -142,6 +135,13 @@ const ChatMessages = () => {
   };
 
   const ShowMessages = () => {
+    const latestMessageRef = useRef(null);
+    // Scroll to the latest message when messages change
+    useEffect(() => {
+      if (latestMessageRef.current) {
+        latestMessageRef.current.scrollIntoView({});
+      }
+    }, [messages, currentChat]);
     return (
       <Stack sx={{ p: 1, color: "white", overflowY: "auto", height: "82%" }}>
         <Typography

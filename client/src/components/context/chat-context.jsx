@@ -91,7 +91,7 @@ export const ChatContextComponent = ({ children, user, allUsers }) => {
       socket.off("getMessage");
       socket.off("getNotification");
     };
-  }, [socket]);
+  }, [socket,currentChat]);
 
   //send chat
   useEffect(() => {

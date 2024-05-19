@@ -29,7 +29,7 @@ const Notification = ({ userWiseNotificationsMap }) => {
     markNotificationAsRead(n, userChats, notifications, user);
     setOpen(false);
   };
-  console.log("userWiseNotificationsMap", userWiseNotificationsMap);
+  
   return (
     <div style={{ position: "relative" }}>
       <Badge badgeContent={unreadNotificationsCount} color="error">
