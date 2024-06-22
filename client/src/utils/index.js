@@ -135,9 +135,11 @@ export const getFormattedTimeForUserChats = (date) => {
   } else if (moment().subtract(1, "month").isBefore(createdAt)) {
     // Check if created within the last month
     formattedTime = createdAt.format("MMM D");
+  } else {
     // For older messages, display date
-    formattedTime = createdAt.format("MMM D, YYYY");
+    formattedTime = createdAt.format("DD/MM/YYYY");
   }
+
   return formattedTime;
 };
 
